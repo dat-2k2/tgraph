@@ -1,74 +1,35 @@
 #include"algo.h"
-map<string, char>RLE(ifstream& src, ofstream& des) {
+#include<bitset>
+void RLE(ifstream& src, ofstream& des) {
 	//read by group of symbol
 	char current;
-	int Count = 0;
+	int Count= 1;
 	src.get(current);
-	while (src.peek() != EOF){
+	while (true){
 		char tmp;
 		//read until symbol changes 
-		do {
+		while (src.peek()!= EOF) {
 			src.get(tmp);
-			if (src.eof()) break;
-			Count++;
-			if (Count == CHAR_MAX) break;
-		} while (tmp == current && src.peek() != EOF);
-		//write the encoded to des
-		des.write(&current, sizeof(char));
-		des.write(reinterpret_cast<char*>(&Count), sizeof(char));
-		//reset
-		Count = 0;
-		//if not be eof, then continue
-		if (src.peek() != EOF) {
-			current = tmp;
-		}
-	}
-	return map<string, char>();
-}
-
-//tree implementation
-struct node {
-	char name;
-	int freq;
-	node* left;
-	node* right;
-};
-void Huffman(ifstream& src, ofstream& des) {
-	//preprocess
-	vector<pair<char, int>> alphabet;
-	while (true) {
-		char tmp;
-		src.get(tmp);
-		if (src.eof()) break;
-		//check coincidence
-		int i;
-		for (i = 0; i < alphabet.size(); i++) {
-			if (alphabet[i].first == tmp) {
-				alphabet[i].second++;
+			if (tmp == current) Count++; 
+			else {
 				break;
 			}
+			if (Count == CHAR_MAX) break;
+		};
+		//write the encoded to des
+			des.write(&current, sizeof(char));
+			des.write(reinterpret_cast<char*>(&Count), sizeof(char));
+		//reset
+		Count = 1;
+		//if not be eof, then continue
+		if (!src.eof()) {
+			current = tmp;
 		}
-		if (i == alphabet.size()) {
-			alphabet.push_back(pair<char, int>(tmp, 1));
-		}
-	}
-	sort(alphabet.begin(), alphabet.end(), [](pair<char, int> x, pair<char, int>y) {return (x.second > y.second); });
-	// now we got a frequency-descending alphabet 
-	//Huffman: construct a tree from below to top
-	while (!alphabet.empty()) {
-		node* tmp1 = new node;
-		node* tmp2 = new node;
-		tmp1->name = alphabet.end()->first;
-		tmp1->freq = alphabet.end()->second;
-		alphabet.pop_back();
-		tmp1->name = alphabet.end()->first;
-		tmp2->freq = alphabet.end()->second;
-		alphabet.pop_back();
-		alphabet.push_back(pair<char, int>(tmp1->name + tmp2->name, tmp1->freq+tmp2->freq));
+		else break;
 	}
 }
 
-void subFano(vector<pair<char, int>>& alphabet, int SUM, int start, int end, vector<string>& encode) {
+void Fanorecursive(vector<pair<char, int>>& alphabet, int SUM, int start, int end, vector<string>& encode) {
 	if (start >= end) return;
 	if (end - start + 1 >= 2) {
 		//find pivot
@@ -89,17 +50,18 @@ void subFano(vector<pair<char, int>>& alphabet, int SUM, int start, int end, vec
 			encode[i] += '1';
 		}
 		//regression
-		subFano(alphabet, partsum, start, pivot-1, encode);
-		subFano(alphabet, SUM - partsum, pivot, end, encode);
+		Fanorecursive(alphabet, partsum, start, pivot-1, encode);
+		Fanorecursive(alphabet, SUM - partsum, pivot, end, encode);
 	}
 	else {
 		return;
 	}
 };
-map<string, char> Fano(ifstream& src, ofstream& des) {
+
+void Fano(ifstream& src, ofstream& des, map<string, char>*& decoder) {
 	vector<pair<char, int>> alphabet;
 	int SUM = 0;
-	while (true) {
+	while (true){
 		char tmp;
 		src.get(tmp);
 		if (src.eof()) break;
@@ -119,29 +81,54 @@ map<string, char> Fano(ifstream& src, ofstream& des) {
 	sort(alphabet.begin(), alphabet.end(), [](pair<char, int> x, pair<char, int>y) {return (x.second > y.second); });
 	vector<string>encode(alphabet.size());
 	if (alphabet.size() < 2) {
-		encode[0] = '0';
+		encode[0] = '1';
 	}
 	else {
-		subFano(alphabet, SUM, 0, alphabet.size() - 1, encode);
+		Fanorecursive(alphabet, SUM, 0, alphabet.size() - 1, encode);
 	}
-	//create dict
-	map<char, string>dictencode;
+
+	map<char, string> encoder;
+	decoder = new map<string, char>;
 	for (int i = 0; i < alphabet.size(); i++) {
-		dictencode[alphabet[i].first] = encode[i];
+		encoder[alphabet[i].first] = encode[i];
+		(*decoder)[encode[i]] = alphabet[i].first;
 	}
+	
 	//write to the dest file
 	//back to the start
 	src.clear();
 	src.seekg(0, std::ios::beg);
+	//bit packing
+	vector<char>packed;
+	packed.push_back(0);
+	int counter = 0;
+	int track = 0;
+	//bit packing directly from file
 	while (true) {
-		char tmp;
-		src.get(tmp);
+		char input;
+		src.get(input);
 		if (src.eof()) break;
-		des.write(dictencode[tmp].c_str(), dictencode[tmp].size());
+		//write by bit
+		for (int j = 0; j < encoder[input].size(); j++) {
+			if (counter >= 8) {
+				packed.push_back(0);
+				counter = 0;
+			}
+			if (encoder[input][j] == '1') {
+				packed.back() |= (1 << (7 - counter));
+			}
+			counter++;
+		}
 	}
-	map<string, char> dictdecode;
-	for (int i = 0; i < alphabet.size(); i++) {
-		dictdecode[encode[i]] = alphabet[i].first;
+	//last character tells how many "paddling" bits at the end of file - a flag
+	if (counter < 8) {
+		packed.push_back(8 - counter);
 	}
-	return dictdecode;
+	else {
+		packed.push_back(8);
+	}
+	//write to file
+	for (int i = 0; i < packed.size(); i++) {
+		des.write(&packed[i], sizeof(char));
+	}
 }

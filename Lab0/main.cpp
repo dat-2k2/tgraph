@@ -4,9 +4,8 @@
 #include <uchar.h>
 #include<stdio.h>
 #include<codecvt>
-//const  char LIST[18];
-const char test[] = { 'à','á','ñ','ä'};
-
+const char LIST[] = {'ï','ê','ÿ','÷','á','þ',' ','0','1','2','3','4','5','6','7','8','9','0','!','.'};
+const int SIZE = 20;
 template<class T, class U> T input(T& n, U f){
 	bool valid = false;
 	while (!valid) {
@@ -23,34 +22,63 @@ template<class T, class U> T input(T& n, U f){
 }
 
 int main(){
-	ofstream des;
-	//generate textfile
-	des.open(TEXTFILE);
-	textgenerator(VOLUME, test, des);
-	des.close();
+	srand(time(NULL));
 	cout << "Lab 0: Encoding, Decoding\n\n\n";
 	cout << "Choose option:\n";
 	cout << WRLE<< ". Encode, decode with RLE\n";
-	cout << WFano<<".Encode, decode with Fano\n";
-	cout << WRFR <<".Encode, decode with RLE + Fano + RLE\n";
+	cout << WFano<<". Encode, decode with Fano\n";
+	cout << WRF <<". Encode, decode with RLE + Fano\n";
+	cout << WFR << ". Encode, decode with Fano + RLE\n";
+	cout << "5. New text\n";
 	cout << "0. Exit\n\n\n";
+	//generate textfile
+	textgenerator(VOLUME, LIST, SIZE, TEXTFILE);
 	int n;
+	map<string, char>* decoder = 0;
 	while (true) {
-		n = input(n, [](int x) {if (x < 0 || x > 3) { std::cout << "Follow instruction!\n\n"; return false; }});
-		if (n == 0) break;
-		if (n != WRFR) {
-			map<string, char> dictdecode = encode(n, TEXTFILE, ENCODEDFILE);
-			decode(ENCODEDFILE, CHECKFILE, dictdecode);
+		n = input(n, [](int x) {if (x < 0 || x > 5) { std::cout << "Follow instruction!\n\n"; return false; }});
+		switch (n) {
+		case 0:
+			return 0;
+		case WRLE:
+			encode(WRLE, TEXTFILE, ENCODEDFILE, decoder);
+			decode(WRLE, ENCODEDFILE, CHECKFILE);
+			if (check(TEXTFILE, CHECKFILE) == 0) cout << "Encoded successfully\n\n";
+			else cout << "Encoded failed\n" << check(TEXTFILE, CHECKFILE) << "\n\n";
+			compratio(TEXTFILE, ENCODEDFILE);
+			break;
+		case WFano:
+			encode(WFano, TEXTFILE, ENCODEDFILE, decoder);
+			decode(WFano, ENCODEDFILE, CHECKFILE, decoder);
+			if (check(TEXTFILE, CHECKFILE) == 0) cout << "Encoded successfully\n\n";
+			else cout << "Encoded failed\n" << check(TEXTFILE, CHECKFILE) << "\n\n";
+			compratio(TEXTFILE, ENCODEDFILE);
+			break;
+		case WRF:
+			encode(WRLE, TEXTFILE, TMPFILE, decoder);
+			encode(WFano, TMPFILE, ENCODEDFILE, decoder);
+			decode(WFano, ENCODEDFILE, TMPFILE, decoder);
+			decode(WRLE, TMPFILE, CHECKFILE);
+			if (check(TEXTFILE, CHECKFILE) == 0)
+			{
+				cout << "Encoded successfully\n\n";
+				compratio(TEXTFILE, ENCODEDFILE);
+			}
+			else cout << "Encoded failed\n" << check(TEXTFILE, CHECKFILE) << "\n\n";
+			break;
+		case WFR:
+			encode(WFano, TEXTFILE, TMPFILE, decoder);
+			encode(WRLE, TMPFILE, ENCODEDFILE, decoder);
+			decode(WRLE, ENCODEDFILE, TMPFILE);
+			decode(WFano, TMPFILE, CHECKFILE, decoder);
+			if (check(TEXTFILE, CHECKFILE) == 0)
+			{
+				cout << "Encoded successfully\n\n";
+				compratio(TEXTFILE, ENCODEDFILE);
+			}
+			else cout << "Encoded failed\n" << check(TEXTFILE, CHECKFILE) << "\n\n";
+			break;
 		}
-		else {
-			encode(WRLE, TEXTFILE, "TMPD1.txt");
-			decode("TMPD1.txt", CHECKFILE, map<string,char>());
-			map<string, char> dictdecode = encode(WFano, "TMPD1.txt", "TMPD2.txt");
-			decode("TMPD2.txt", CHECKFILE, dictdecode);
-			encode(WRLE,"TMPD2.txt" , ENCODEDFILE);
-			decode(ENCODEDFILE, CHECKFILE, map<string, char>());
-		}
-		decompratio(ENCODEDFILE, TEXTFILE);
 	}
 
 	return 0;
