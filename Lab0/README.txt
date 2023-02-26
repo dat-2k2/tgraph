@@ -26,7 +26,7 @@ Decoding function needs to read the whole file as a string (bc the file is writt
 then look up bitword in dictionary to decode. 
 
 // About encoded file
-Must be a BINARY file, to avoid data loss or miswrite. 
+Must be open in BINARY mode, to avoid data loss or miswrite. 
 
 //RLE update
 Add a flag bitset to the end of file, with length = size of encoding file
