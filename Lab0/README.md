@@ -4,7 +4,7 @@
 #RLE
 
 *Run-length encoding*. \
-character series -> character + occurrences.\
+character series -> character + occurrences.
 
 #Fano
 
@@ -12,8 +12,7 @@ character series -> character + occurrences.\
 
 #Bitpacking
 
-Mapping bytes to bits, data copied by modified empty string. A flag is added to the end \
-to avoid skipping ending-empty character, simultaneously record number of padding bits. \
+Mapping bytes to bits, data copied by modified empty string. A flag is added to the end to avoid skipping ending-empty character, simultaneously record number of padding bits. 
 
 #Unpacking
 
