@@ -116,6 +116,8 @@ int encode(int choice, const char* src, const char* des, map<string, char>*& dec
 void compratio(const char* src, const char* des) { 
 	ifstream f1; f1.open(src, ios::ate);
 	ifstream f2; f2.open(des, ios::ate);
-	printf("Compressing ratio %.2f\n\n", float(f1.tellg()) / float(f2.tellg()));
+	printf("Compressing ratio %.2f\n", float(f1.tellg()) / float(f2.tellg()));
+	printf("Data saving %.2f", 100 - float(f2.tellg()) / float(f1.tellg()) * 100);
+	cout << "%\n\n";
 }
 	

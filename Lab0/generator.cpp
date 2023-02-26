@@ -1,6 +1,7 @@
 #include"generator.h"
 
 void textgenerator(int volume, const char datainp[], const int size, const char* File){
+	srand(time(NULL));
 	ofstream f;
 	f.open(File);
 	if (!f.is_open()) {

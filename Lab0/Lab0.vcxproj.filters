@@ -64,9 +64,6 @@
     <Text Include="TMPD2.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="README.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="CHECK.dat">
@@ -79,6 +76,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="OUT.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="README.md">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
