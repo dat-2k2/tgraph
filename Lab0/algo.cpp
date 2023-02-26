@@ -58,7 +58,7 @@ void Fanorecursive(vector<pair<char, int>>& alphabet, int SUM, int start, int en
 	}
 };
 
-void Fano(ifstream& src, ofstream& des, map<string, char>*& decoder) {
+float Fano(ifstream& src, ofstream& des, map<string, char>*& decoder) {
 	vector<pair<char, int>> alphabet;
 	int SUM = 0;
 	while (true){
@@ -89,15 +89,21 @@ void Fano(ifstream& src, ofstream& des, map<string, char>*& decoder) {
 
 	map<char, string> encoder;
 	decoder = new map<string, char>;
+	//simultaneously calculate цену кодирования 
+	float price = 0;
 	for (int i = 0; i < alphabet.size(); i++) {
 		encoder[alphabet[i].first] = encode[i];
+		//price = sum (freq* lengthof(codeword))
+		price += (float)(alphabet[i].second) / SUM * encode[i].size();
 		(*decoder)[encode[i]] = alphabet[i].first;
 	}
 	
-	//write to the dest file
+
 	//back to the start
 	src.clear();
 	src.seekg(0, std::ios::beg);
+
+	//--------------------------------------------
 	//bit packing
 	vector<char>packed;
 	packed.push_back(0);
@@ -127,8 +133,13 @@ void Fano(ifstream& src, ofstream& des, map<string, char>*& decoder) {
 	else {
 		packed.push_back(8);
 	}
+	//---------------------------------------------------
+	
 	//write to file
 	for (int i = 0; i < packed.size(); i++) {
 		des.write(&packed[i], sizeof(char));
 	}
+
+	//return цена кодирования 
+	return price;
 }

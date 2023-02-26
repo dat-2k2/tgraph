@@ -22,6 +22,7 @@ template<class T, class U> T input(T& n, U f){
 }
 
 int main(){
+	setlocale(LC_ALL, "Russian");
 	srand(time(NULL));
 	cout << "Lab 0: Encoding, Decoding\n\n\n";
 	cout << "Choose option:\n";

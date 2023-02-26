@@ -39,7 +39,7 @@ int decode(int mode, const char* src, const char* des, map<string, char>* dict) 
 		case WFano: {
 			string tmpstr = "";
 			int indexinchar = 0;
-			int paddlebits;
+			int paddingbits;
 			string readin;
 			char tmp;
 			f1.seekg(0, std::ios::beg);
@@ -51,10 +51,10 @@ int decode(int mode, const char* src, const char* des, map<string, char>* dict) 
 			}
 			//save the number of paddling bits
 			//unpacking
-			paddlebits = int(readin.back());
-			if (paddlebits == 8) paddlebits = 0;
+			paddingbits = int(readin.back());
+			if (paddingbits == 8) paddingbits = 0;
 			readin.pop_back();
-			//take out the paddle bit. 
+			//take out the padding bit. 
 			for (int i = 0; i < readin.size(); i++) {
 				for (int j = 0; j < 8; j++) {
 					//extract bit into char
@@ -64,8 +64,8 @@ int decode(int mode, const char* src, const char* des, map<string, char>* dict) 
 					else tmpstr += '0';
 				}
 			}
-			//clear the paddlebits
-			while (paddlebits--) {
+			//clear the paddingbits
+			while (paddingbits--) {
 				tmpstr.pop_back();
 			}
 			string wordin = "";
@@ -107,7 +107,8 @@ int encode(int choice, const char* src, const char* des, map<string, char>*& dec
 		RLE(f1, f2);
 		return 0;
 	case WFano:
-		Fano(f1, f2,  decoder);
+		float p = Fano(f1, f2, decoder);
+		printf("Цена кодирования %.2f\n\n", p);
 		return 0;
 	}
 }
@@ -115,6 +116,6 @@ int encode(int choice, const char* src, const char* des, map<string, char>*& dec
 void compratio(const char* src, const char* des) { 
 	ifstream f1; f1.open(src, ios::ate);
 	ifstream f2; f2.open(des, ios::ate);
-	cout << "Compression ratio " << float(f1.tellg()) / float(f2.tellg()) <<"\n\n";
+	printf("Compressing ratio %.2f\n\n", float(f1.tellg()) / float(f2.tellg()));
 }
 	
