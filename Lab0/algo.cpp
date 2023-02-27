@@ -126,7 +126,7 @@ float Fano(ifstream& src, ofstream& des, map<string, char>*& decoder) {
 			counter++;
 		}
 	}
-	//last character tells how many "paddling" bits at the end of file - a flag
+	//last character tells how many "padding" bits at the end of file
 	if (counter < 8) {
 		packed.push_back(8 - counter);
 	}
