@@ -1,2 +1,2 @@
 # tgraph
-Graph theory laboratories, Fall 2023 
+Graph theory laboratories, Spring 2023 
