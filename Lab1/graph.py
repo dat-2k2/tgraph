@@ -86,9 +86,10 @@ def Shimbell_matrix(length: int, G):
     else:
         return multiply_graph(G, Shimbell_matrix(length - 1, G))
 
+"""Connecting-path finding"""
 def DFS_path(i:int, j:int, visited, G):
         res = []
-        '''special case'''
+        #special case
         if (G[i][j]):
             res.append([i,j])
         visited.append(i)
@@ -109,7 +110,8 @@ def DFS_path(i:int, j:int, visited, G):
 
 
 EXITCODE  = 0
-def input_custom(instruction:str, check = lambda x: x.isdigit(), convert = lambda x: int(x), alert = "Follow the instruction!" ) -> int:
+'''Input handler'''
+def input_custom(instruction:str, check = lambda x: x.isnumeric(), convert = lambda x: int(x,10), alert = "Follow the instruction!" ) -> int:
     while(True):
         n = input(instruction)
         if (not check(n)):
@@ -121,18 +123,21 @@ EXIT = False
 
 
 if (__name__ == "__main__"):
+
     np.random.seed()
+
     print("Лабораторная 1: Построение графов")
     adjacency_matrix = []
     graph = None
     while (not EXIT):
         if (len(adjacency_matrix) == 0):
-            print("Случайно построить граф с задаемым количеством вершин:")
-            num_vertices = input_custom( "Вводите количество вершин (0 - выход):")
+            print("Случайно построить ациклический граф с задаемым количеством вершин:")
+            num_vertices = input_custom( "Вводите количество вершин (0 - выход):", lambda x: x.isnumeric() and int(x,10)>1,lambda x:int(x,10), "Кол-во вершин должен быть больше 1!")
             adjacency_matrix =  generatorAcyclicDirectedGraph(num_vertices)
             graph = nx.MultiDiGraph(np.array(adjacency_matrix))
             print ("Граф построен:")
-            print(adjacency_matrix)
+            print(np.array(adjacency_matrix))
+            pos = nx.circular_layout(graph)
         print("1. Изображение графа")
         print("2. Матрица Шимбелла с задаемым количеством ребер")
         print("3. Проверить достижимость от одной точкой до другой")
@@ -140,7 +145,7 @@ if (__name__ == "__main__"):
         print("0. Выход")
         choice = input_custom("Выберите задание: ", lambda x: x in ['1','2','3','4','0'])
         if (choice == 1):
-            nx.draw(graph,nx.shell_layout(graph), with_labels = True, font_weight ='bold',node_color = "white")
+            nx.draw(graph,pos, with_labels = True)
             plt.show()
         elif (choice ==2):
             length = input_custom("Вводите количество ребер (0-выход): ")
@@ -152,8 +157,10 @@ if (__name__ == "__main__"):
         elif(choice==3):
             src = input_custom("Выверите отправление: ", lambda x: int(x) in range(num_vertices))
             des = input_custom("Выверите прибытие: ", lambda x: int(x) in range(num_vertices))
+
             #nx.draw(graph,nx.shell_layout(graph), with_labels = True, font_weight ='bold',node_color = "white")
             connected_paths = DFS_path(src,des,[],adjacency_matrix)
+            
             print ("Кол-во пути от "+"%s"%src+" до "+"%s"%des+": "+"%s"%(len(connected_paths)))
             print(connected_paths)
             edges = []
@@ -161,7 +168,6 @@ if (__name__ == "__main__"):
                 for i in range (len(path)-1):
                     edges.append([path[i],path[i+1]])
             #
-            pos = nx.circular_layout(graph)
             nx.draw_networkx_nodes(graph,pos)
             nx.draw_networkx_labels(graph, pos)
             nx.draw_networkx_edges(graph, pos,arrows=True)
