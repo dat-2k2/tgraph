@@ -1,8 +1,8 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-ALPHA = 0.3
-MUY = 50
+ALPHA = 2
+MUY = 20
 def generatorRandom(alpha = ALPHA, muy = MUY) -> int:
     b = float(1-alpha)
     c = muy/(1+alpha*muy)
@@ -45,23 +45,12 @@ def generatorAcyclicDirectedGraph(vertices:int):
             adjmt[i].append(0)
         new.append(0)
         adjmt.append(new)
+        print(new)
         return adjmt
 
 
 
-#plus on graph, by Shimbell method
-def plus_graph(P:np.ndarray, Q:np.ndarray):
-    ''' a+b = max (a,b)'''
-    if (P.shape != Q.shape):
-        return []
-    else :
-        res = np.full(P.shape,0)
-        for row in range (P.shape[0]):
-            for col in range (P.shape[1]):
-                res[row][col] = max(P[row][col], Q[row][col])
-        return res
-    
-#multiply on graph, by Shimbell method
+'''multiplication 2 adj matrices by Shimbell method'''
 def multiply_graph(P:np.ndarray,Q:np.ndarray):
     if (P.shape[0]!= P.shape[1] or Q.shape[0] != Q.shape[1] or P.shape != Q.shape):
         return []
@@ -70,20 +59,14 @@ def multiply_graph(P:np.ndarray,Q:np.ndarray):
         for row in range (P.shape[0]):
             for col in range (P.shape[1]):
                 for index in range (P.shape[0]):
+                    tmp = (P[row][index]+Q[index][col]) if (P[row][index] * Q[index][col]) else 0
                     if (index == 0):
-                        res[row][col] = P[row][index] * Q[index][col]
+                        res[row][col] = tmp
                     else:
-                        if (res[row][col] < P[row][index] * Q[index][col]):
-                            res[row][col] = P[row][index] * Q[index][col]
+                        if (res[row][col] < tmp):
+                            res[row][col] = tmp
         return res
 
-#calculate Shimbell matrix, deg = length 
-#Shimbell[i,j] = number of walk(маршрут) (not path (путь)) with length from i to j 
-def Shimbell_matrix(length: int, G):
-    if (length ==1):
-        return G
-    else:
-        return multiply_graph(G, Shimbell_matrix(length - 1, G))
 
 """Connecting-path finding"""
 def DFS_path(i:int, j:int,G, visited = [] ):
@@ -107,6 +90,15 @@ def DFS_path(i:int, j:int,G, visited = [] ):
             filtered_arr.append(path)
     return  filtered_arr
 
+#calculate Shimbell matrix, deg = length 
+#Shimbell[i,j] = number of walk(маршрут) (not path (путь)) with length from i to j 
+def Shimbell_matrix(length: int, G):
+    if (length ==1):
+        return G
+    elif (length == 0):
+        return []
+    else:
+        return multiply_graph(G, Shimbell_matrix(length - 1, G))
 
 
 EXITCODE  = 0
@@ -131,34 +123,60 @@ if (__name__ == "__main__"):
     graph = None
     needtoreopen = False
     while (not EXIT):
-
+        '''initialize graph'''
         if (len(adjacency_matrix) == 0):
             print("Случайно построить ациклический граф с задаемым количеством вершин:")
-            num_vertices = input_custom( "Вводите количество вершин (0 - выход):", lambda x: x.isnumeric() and int(x,10)>1,lambda x:int(x,10), "Кол-во вершин должен быть больше 1!")
+            num_vertices = input_custom( "Вводите количество вершин (0 - выход):", lambda x: x.isnumeric() and int(x,10)!=1,lambda x:int(x,10), "Кол-во вершин должен быть больше 1!")
+            if (num_vertices == EXITCODE):
+                EXIT = True
+                break
             adjacency_matrix =  generatorAcyclicDirectedGraph(num_vertices)
             graph = nx.MultiDiGraph(np.array(adjacency_matrix))
             print ("Граф построен:")
             print(np.array(adjacency_matrix))
             pos = nx.circular_layout(graph)
+
+        '''modes'''
         print("1. Изображение графа")
         print("2. Матрица Шимбелла с задаемым количеством ребер")
         print("3. Проверить достижимость от одной точкой до другой")
         print("4. Новый граф")
         print("0. Выход")
         choice = input_custom("Выберите задание: ", lambda x: x in ['1','2','3','4','0'])
+
         if (choice == 1):
+            '''draw graph'''
             if (needtoreopen):
                 plt.close()
                 needtoreopen = False
             nx.draw(graph,pos, with_labels = True)
             plt.show(block=False)
         elif (choice ==2):
-            length = input_custom("Вводите количество ребер (0-выход): ")
-            if (length == EXITCODE):
-                EXIT = True
-                break
+            '''Shimbell'''
+            length = input_custom("Вводите количество ребер: ")
             print("Матрица Шимбелла с "+ "%s"%length +" ребер:")
-            print(Shimbell_matrix(length, np.array(adjacency_matrix)))
+            shimbell = Shimbell_matrix(length, np.array(adjacency_matrix))
+            print(shimbell)
+
+            '''find + show all paths sastified Shimbell'''
+            if (not np.array_equal(shimbell,np.full(num_vertices, np.zeros(num_vertices))) and len(shimbell) > 0):
+                edges = []
+                for src in range (len(adjacency_matrix)-1):
+                    for des in range(len(adjacency_matrix)-1):
+                        if (adjacency_matrix[src][des]):
+                            connected_paths = DFS_path(src,des,adjacency_matrix)
+                            for path in connected_paths:
+                                for i in range (len(path)-1):
+                                    edges.append([path[i],path[i+1]])
+                if (needtoreopen):
+                    plt.close()
+                    needtoreopen = False
+                nx.draw_networkx_nodes(graph,pos)
+                nx.draw_networkx_labels(graph, pos)
+                nx.draw_networkx_edges(graph, pos,arrows=True)
+                nx.draw_networkx_edges(graph,pos,edges,edge_color = 'red',arrows=True)
+                plt.show(block = False)
+                needtoreopen = True
         elif(choice==3):
             src = input_custom("Выверите отправление: ", lambda x: int(x) in range(num_vertices))
             des = input_custom("Выверите прибытие: ", lambda x: int(x) in range(num_vertices))
