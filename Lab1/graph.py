@@ -146,7 +146,7 @@ if (__name__ == "__main__"):
         choice = input_custom("Выберите задание: ", lambda x: x in ['1','2','3','4','0'])
         if (choice == 1):
             nx.draw(graph,pos, with_labels = True)
-            plt.show()
+            plt.show(block=False)
         elif (choice ==2):
             length = input_custom("Вводите количество ребер (0-выход): ")
             if (length == EXITCODE):
@@ -172,7 +172,7 @@ if (__name__ == "__main__"):
             nx.draw_networkx_labels(graph, pos)
             nx.draw_networkx_edges(graph, pos,arrows=True)
             nx.draw_networkx_edges(graph,pos,edges,edge_color = 'red',arrows=True)
-            plt.show()
+            plt.show(block = False)
         elif(choice == 4):
             adjacency_matrix = []
             continue
