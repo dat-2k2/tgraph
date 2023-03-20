@@ -1,7 +1,6 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-import functools as func
 ALPHA = 0.3
 MUY = 50
 def generatorRandom(alpha = ALPHA, muy = MUY) -> int:
