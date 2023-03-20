@@ -174,6 +174,7 @@ if (__name__ == "__main__"):
             nx.draw_networkx_edges(graph,pos,edges,edge_color = 'red',arrows=True)
             plt.show(block = False)
         elif(choice == 4):
+            plt.close()
             adjacency_matrix = []
             continue
         elif(choice == EXITCODE):
