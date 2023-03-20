@@ -86,25 +86,26 @@ def Shimbell_matrix(length: int, G):
         return multiply_graph(G, Shimbell_matrix(length - 1, G))
 
 """Connecting-path finding"""
-def DFS_path(i:int, j:int, visited, G):
-        res = []
-        #special case
-        if (G[i][j]):
-            res.append([i,j])
-        visited.append(i)
-        '''for undirectly connected'''
-        for next in range (len(G)):
-            if (not (next in visited)):
-                if (G[i][next]):
-                    #recursion here
-                    for tail in DFS_path(next,j,visited+[next],G):
-                        res.append([i]+tail)
-        #filter
-        filtered_arr = []
-        for path in res:
-            if j in path:
-                filtered_arr.append(path)
-        return  filtered_arr
+def DFS_path(i:int, j:int,G, visited = [] ):
+    res = []
+    #special case
+    visited.append(i)
+    if (G[i][j]):
+        res.append([i,j])
+        visited.append(j)
+    '''for undirectly connected'''
+    for next in range (len(G)):
+        if (not (next in visited)):
+            if (G[i][next]):
+                #recursion here
+                for tail in DFS_path(next,j,G, visited+[next]):
+                    res.append([i]+tail)
+    #filter
+    filtered_arr = []
+    for path in res:
+        if j in path:
+            filtered_arr.append(path)
+    return  filtered_arr
 
 
 
@@ -163,7 +164,7 @@ if (__name__ == "__main__"):
             des = input_custom("Выверите прибытие: ", lambda x: int(x) in range(num_vertices))
 
             #nx.draw(graph,nx.shell_layout(graph), with_labels = True, font_weight ='bold',node_color = "white")
-            connected_paths = DFS_path(src,des,[],adjacency_matrix)
+            connected_paths = DFS_path(src,des,adjacency_matrix)
             
             print ("Кол-во пути от "+"%s"%src+" до "+"%s"%des+": "+"%s"%(len(connected_paths)))
             print(connected_paths)
