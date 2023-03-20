@@ -129,7 +129,9 @@ if (__name__ == "__main__"):
     print("Лабораторная 1: Построение графов")
     adjacency_matrix = []
     graph = None
+    needtoreopen = False
     while (not EXIT):
+
         if (len(adjacency_matrix) == 0):
             print("Случайно построить ациклический граф с задаемым количеством вершин:")
             num_vertices = input_custom( "Вводите количество вершин (0 - выход):", lambda x: x.isnumeric() and int(x,10)>1,lambda x:int(x,10), "Кол-во вершин должен быть больше 1!")
@@ -145,6 +147,9 @@ if (__name__ == "__main__"):
         print("0. Выход")
         choice = input_custom("Выберите задание: ", lambda x: x in ['1','2','3','4','0'])
         if (choice == 1):
+            if (needtoreopen):
+                plt.close()
+                needtoreopen = False
             nx.draw(graph,pos, with_labels = True)
             plt.show(block=False)
         elif (choice ==2):
@@ -168,11 +173,16 @@ if (__name__ == "__main__"):
                 for i in range (len(path)-1):
                     edges.append([path[i],path[i+1]])
             #
+            if (needtoreopen):
+                plt.close()
+                needtoreopen = False
             nx.draw_networkx_nodes(graph,pos)
             nx.draw_networkx_labels(graph, pos)
             nx.draw_networkx_edges(graph, pos,arrows=True)
             nx.draw_networkx_edges(graph,pos,edges,edge_color = 'red',arrows=True)
+
             plt.show(block = False)
+            needtoreopen = True
         elif(choice == 4):
             plt.close()
             adjacency_matrix = []
