@@ -45,7 +45,9 @@ def printPaths(path_list, caption = ""):
     for path in path_list:
         print (path)
 
-    
+
+
+
 EXIT = False
 EXITCODE  = 0
 NEWGRAPH = 1
@@ -60,23 +62,41 @@ if (__name__ == "__main__"):
 
     np.random.seed()
 
+    '''Preparation'''
     print("Лабораторная 1: Построение графов")
+
+    '''cache memory'''
+
+    #adjacency matrix
     adjacency_matrix = []
+
     graph = None
     needtoreopen = False
+    pos = None
+    #solution for Floyd - Warshall. 
+    #Need to save it bc this algo costs alot more than two others.
+    FW_cache = []
+
+    ''''''
+
     while (not EXIT):
         '''initialize graph'''
         if (len(adjacency_matrix) == 0):
+
+            '''user input'''
             print("Случайно построить ациклический граф с задаемым количеством вершин:")
             num_vertices = input_custom( "Вводите количество вершин (0 - выход):", lambda x: x.isnumeric() and int(x,10)!=1,lambda x:int(x,10), "Кол-во вершин должен быть больше 1!")
             if (num_vertices == EXITCODE):
                 EXIT = True
                 break
+
+            '''generate graph from adjacency matrix'''
             adjacency_matrix =  lab1.generatorAcyclicDirectedGraph(num_vertices)
             graph = nx.DiGraph(np.array(adjacency_matrix))
+            pos = nx.circular_layout(graph)
+
             print ("Граф построен:")
             print(np.array(adjacency_matrix))
-            pos = nx.circular_layout(graph)
 
         '''modes'''
         print( str(NEWGRAPH) + ". Новый граф")
@@ -139,7 +159,7 @@ if (__name__ == "__main__"):
                 print ("Кол-во пути от "+"%s"%src+" до "+"%s"%des+": "+"%s"%(len(connected_paths)))
                 printPaths(connected_paths, "Пути из вершины " + str(src) + " до "+ str(des)+": ")
             else: 
-                print ("Вершина "+str(src)+" недостижима из вершины "+str(des))
+                print ("Вершина "+str(des)+" недостижима из вершины "+str(src))
             if (needtoreopen):
                 plt.close()
                 needtoreopen = False
@@ -149,10 +169,17 @@ if (__name__ == "__main__"):
         elif(choice == DIJSKTRA):
             src = input_custom("Выверите отправление: ", lambda x: int(x) in range(num_vertices))
             des = input_custom("Выверите прибытие: ", lambda x: int(x) in range(num_vertices))
-            d = lab2.Dijsktra(adjacency_matrix,src)[0]
-            p = lab2.Dijsktra(adjacency_matrix,src)[1]
+            d = 0 
+            p = 0 
+            iterations = 0
+            arr = lab2.Dijsktra(adjacency_matrix,src)
+            d = arr[0]
+            p = arr[1]
+            iterations = arr[2]           
             print("Вектор расстояний: ")
             print(np.array(d))
+            print("Кол-во итераций = " +str(iterations))
+
 
             '''Print found path'''
             paths = generatePathfromPrev(p,src,des)
@@ -165,45 +192,74 @@ if (__name__ == "__main__"):
                 showpath([paths], graph, pos)
                 needtoreopen = True
             else: 
-                print ("Вершина "+str(src)+" недостижима из вершины "+str(des))
+                print ("Вершина "+str(des)+" недостижима из вершины "+str(src))
 
 
 
         elif (choice == BELLMAN_FORD):
-            src = input_custom("Отправление: ",lambda x: int(x) in range(num_vertices))
+            src = input_custom("Выверите отправление: ", lambda x: int(x) in range(num_vertices))
             des = input_custom("Выверите прибытие: ", lambda x: int(x) in range(num_vertices))
 
             print ("Вектор расстояний: ")
-            d = lab2.BellmanFord(adjacency_matrix,src)[0]
-            p = lab2.BellmanFord(adjacency_matrix,src)[1]
+            d = 0 
+            p = 0 
+            iterations = 0
+            arr = lab2.BellmanFord(adjacency_matrix,src)
+            d = arr[0]
+            p = arr[1]
+            iterations = arr[2]
+            neg_cyc = arr[3]
             print(np.array(d))
+            print ("Кол - во итераций: ")
+            print (iterations)
+
 
             '''Print found path'''
             paths = generatePathfromPrev(p,src,des)
-            if (paths != None): 
-                printPaths([paths], "Кратчайший путь из "+ str(src) + " до " + str(des)+ ": ")
-                '''visualize'''
-                if (needtoreopen):
-                    plt.close()
-                    needtoreopen = False
-                showpath([paths], graph, pos)
-                needtoreopen = True
-            else: 
-                print ("Вершина "+str(src)+" недостижима из вершины "+str(des))
+            if (neg_cyc):
+                print ("Отрицательный цикл")
+            else:
+                if (paths != None): 
+                    printPaths([paths], "Кратчайший путь из "+ str(src) + " до " + str(des)+ ": ")
+                    '''visualize'''
+                    if (needtoreopen):
+                        plt.close()
+                        needtoreopen = False
+                    showpath([paths], graph, pos)
+                    needtoreopen = True
+                else: 
+                    print ("Вершина "+str(des)+" недостижима из вершины "+str(src))
 
         elif (choice == FLOYD_WARSHALL):
             src = input_custom("Выверите отправление: ", lambda x: int(x) in range(num_vertices))
             des = input_custom("Выверите прибытие: ", lambda x: int(x) in range(num_vertices))
-            d = lab2.Dijsktra(adjacency_matrix,src)[0]
-            p = lab2.Dijsktra(adjacency_matrix,src)[1]
+            d = 0 
+            p = 0 
+            iterations = 0
+            arr = lab2.FloydWarshall(adjacency_matrix)
+            d = arr[0]
+            p = arr[1]
+
+            '''Save the solution to cache for later using'''
+            FW_cache = p
+
+
+            iterations = arr[2]
             print("Матрица расстояний: ")
             print(np.array(d))
+            print ("Кол - во итераций: ")
+            print (iterations)
 
+            #need a little convert here: the p array is 2D 
+            paths = None
+            if (p[src][des] != None):
+                paths = [src]
+                while (paths[len(paths)-1] != des):
+                    paths.append(p[paths[len(paths)-1]][des])
             '''Print found path'''
-            paths = generatePathfromPrev(p,src,des)
             if (paths != None): 
                 printPaths([paths], "Кратчайший путь из "+ str(src) + " до " + str(des)+ ": ")
-                    
+    
                 '''visualize'''
                 if (needtoreopen):
                     plt.close()
@@ -212,12 +268,19 @@ if (__name__ == "__main__"):
                 needtoreopen = True
                 
             else: 
-                print ("Вершина "+str(src)+" недостижима из вершины "+str(des))
+                '''Not found, announce'''
+                print ("Вершина "+str(des)+" недостижима из вершины "+str(src))
 
 
         elif(choice == NEWGRAPH):
             plt.close()
+            '''clear cache'''
             adjacency_matrix = []
+            graph = None
+            needtoreopen = False
+            pos = None
+            FW_cache = []
+            ''''''
             continue
         elif(choice == EXITCODE):
             EXIT=True

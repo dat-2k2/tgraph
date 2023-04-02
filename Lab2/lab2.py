@@ -1,22 +1,6 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-from typing import List
-import sys
-sys.path.append("F:/git/tgraph/Lab1")
-#Tree implement
-class node:
-    ''' node attribute'''
-    data: any
-    parent: None
-    children: None
-    '''instance attribute'''
-def __init__(self, data = None, parent = None, children = []):
-    self.data = data
-    self.parent = parent
-    self.children = children
-def printTree(self):
-    print(self.data)
 
 def negative_cycle(G, dist):
     for src in range (0, len(G)):
@@ -37,11 +21,14 @@ def min_index(d):
 
 
 '''for non-negative weight only'''
+#complexity = O(len(G)^2)
 def Dijsktra(G, src:int):
     '''generate queue, dist and prep'''
     q = []
     d = []
     pr = []
+    iterations = 0
+
     for i in range (len(G)):
         d.append(float('inf'))
         pr.append(None)
@@ -56,16 +43,19 @@ def Dijsktra(G, src:int):
                 curr = i
         q.remove(curr)
         for other in q:
+            iterations += 1
             if (G[curr][other] > 0):
                 if (d[other] > d[curr] + G[curr][other]):
                     d[other] = d[curr] + G[curr][other]
                     pr[other] = curr
-    return [d,pr]
+    return d,pr,iterations
 
+#complexity (O(V)
 def BellmanFord(G, src:int):
     '''dist init'''
     dist = []
     prev = []
+    iterations = 0
     for i in range (len(G)):
         dist.append(float('inf'))
         prev.append(None)
@@ -75,44 +65,46 @@ def BellmanFord(G, src:int):
     for k in range (len(G)):
         for i in range (len(G)):
             for j in range (len(G)):
+                iterations += 1
                 if (G[j][i]):
                     if (dist[j] != float('inf')):
                         if (dist[i] > dist[j] + G[j][i]):
                             dist[i] = dist[j]+G[j][i]
                             prev[i] = j
     '''check negative cycle'''
-    return [dist,prev, negative_cycle(G,dist)]
+    return dist,prev, iterations, negative_cycle(G,dist)
 
 '''only return '''
 def FloydWarshall(G):
     '''distance matrix initialization'''
     dist = []
     prev = []
+    iterations = 0
     for i in range (len(G)):
         tmp = []
-        prev.append(0)
+        tmp_prev = []
         for j in range (len(G)):
             if (G[i][j]):
                 tmp.append(G[i][j])
+                tmp_prev.append(j)
             elif (i == j):
                 tmp.append(0)
+                tmp_prev.append(None)
             else:
                 tmp.append(float('inf'))
+                tmp_prev.append(None)
         dist.append(tmp)
+        prev.append(tmp_prev)
 
     '''iteration'''
     for k in range (len(G)):
         for i in range (len(G)):
             for j in range (len(G)):
-                tmp = dist[i][k]+dist[k][j]
-                if (dist[i][j] > tmp):
-                    dist[i][j] = tmp
-                    '''assign new path to "previous" array '''
-                    prev[j] = k
-                    prev[k] = i
-
-    return dist, prev
-
-
-# if (__name__ == "__main__"):
-#     print(Dijsktra([[0.,0.2,1.,0.],[0.,0.,0.,1.],[0.,0.,0.,0.2],[0.,0.,0.,0.]],0))
+                iterations += 1
+                if (i != k and k!= j and j!= i):
+                    tmp = dist[i][k]+dist[k][j]
+                    if (dist[i][j] > tmp):
+                        dist[i][j] = tmp
+                        '''assign new path to "previous" array '''
+                        prev[i][j] = prev[i][k]
+    return dist, prev,iterations
