@@ -233,18 +233,24 @@ if (__name__ == "__main__"):
         elif (choice == FLOYD_WARSHALL):
             src = input_custom("Выверите отправление: ", lambda x: int(x) in range(num_vertices))
             des = input_custom("Выверите прибытие: ", lambda x: int(x) in range(num_vertices))
+
             d = 0 
             p = 0 
             iterations = 0
-            arr = lab2.FloydWarshall(adjacency_matrix)
-            d = arr[0]
-            p = arr[1]
 
-            '''Save the solution to cache for later using'''
-            FW_cache = p
+            if (len(FW_cache) == 0):
+                arr = lab2.FloydWarshall(adjacency_matrix)
+                d = arr[0]
+                p = arr[1]
+                iterations = arr[2]
 
+                '''Save the solution to cache for later using'''
+                FW_cache = arr
+            else:
+                d = FW_cache[0]
+                p = FW_cache[1]
+                iterations = FW_cache[2]
 
-            iterations = arr[2]
             print("Матрица расстояний: ")
             print(np.array(d))
             print ("Кол - во итераций: ")
@@ -256,6 +262,7 @@ if (__name__ == "__main__"):
                 paths = [src]
                 while (paths[len(paths)-1] != des):
                     paths.append(p[paths[len(paths)-1]][des])
+                    
             '''Print found path'''
             if (paths != None): 
                 printPaths([paths], "Кратчайший путь из "+ str(src) + " до " + str(des)+ ": ")
