@@ -1,4 +1,4 @@
-##Lab 2
+## Lab 2
 
 This is my work for Lab 2 in Graph Theory Course
 
