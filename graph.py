@@ -139,7 +139,7 @@ if (__name__ == "__main__"):
                 if (needtoreopen):
                     plt.close()
                     needtoreopen = False
-
+                connected_paths = list(filter(lambda x: len(x) == length + 1, connected_paths))
                 '''print all paths with given length'''
                 printPaths(connected_paths, "Пути с длиной "+ str(length))
 
