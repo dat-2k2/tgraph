@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 def negative_cycle(G, dist):
     for src in range (0, len(G)):
         for des in range (0, len(G)):
-            if (dist[des] > dist[src] + G[src][des]):
-                return False
-    return True
+            if (G[src][des]):
+                if (dist[des] > dist[src] + G[src][des]):
+                    return True
+    return False
 
 def min_index(d):
     min = d[0]
@@ -36,18 +37,25 @@ def Dijsktra(G, src:int):
     d[src] = 0
     '''iterate'''
     while (len(q)):
+
         '''find min d(u) in Q'''
         curr = q[0]
         for i in q:
             if (d[i] < d[curr]):
                 curr = i
+
         q.remove(curr)
+
         for other in q:
             iterations += 1
+            '''shortest path from src to A = shortest path from src to 
+            one of pred(A) + from that to A'''
             if (G[curr][other] > 0):
                 if (d[other] > d[curr] + G[curr][other]):
                     d[other] = d[curr] + G[curr][other]
                     pr[other] = curr
+
+                    
     return d,pr,iterations
 
 #complexity (O(V)
@@ -60,17 +68,19 @@ def BellmanFord(G, src:int):
         dist.append(float('inf'))
         prev.append(None)
     dist[src] = 0
-    
+    edge_list = []
+    for i in range (len(G)):
+        for j in range (len(G)):
+            if (G[i][j]):
+                edge_list.append((i,j))
     '''update distance'''
     for k in range (len(G)):
-        for i in range (len(G)):
-            for j in range (len(G)):
-                iterations += 1
-                if (G[j][i]):
-                    if (dist[j] != float('inf')):
-                        if (dist[i] > dist[j] + G[j][i]):
-                            dist[i] = dist[j]+G[j][i]
-                            prev[i] = j
+        for edge in edge_list:
+            iterations += 1
+            if (G[edge[0]][edge[1]]):
+                if (dist[edge[1]] > dist[edge[0]] + G[edge[0]][edge[1]]):
+                    dist[edge[1]] = dist[edge[0]] + G[edge[0]][edge[1]]
+                    prev[edge[1]] = edge[0]
     '''check negative cycle'''
     return dist,prev, iterations, negative_cycle(G,dist)
 

@@ -1,0 +1,6 @@
+﻿  algo.cpp
+F:\git\tgraph\Lab0\algo.cpp(71,17): warning C4018: '<': signed/unsigned mismatch
+F:\git\tgraph\Lab0\algo.cpp(94,20): warning C4018: '<': signed/unsigned mismatch
+F:\git\tgraph\Lab0\algo.cpp(118,21): warning C4018: '<': signed/unsigned mismatch
+F:\git\tgraph\Lab0\algo.cpp(139,20): warning C4018: '<': signed/unsigned mismatch
+  Lab0.vcxproj -> F:\git\tgraph\Lab0\Debug\Lab0.exe

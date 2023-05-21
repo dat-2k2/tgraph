@@ -110,8 +110,8 @@ float Fano(ifstream& src, ofstream& des, map<string, char>*& decoder) {
 	int counter = 0;
 	int track = 0;
 	//bit packing directly from file
-	while (true) {
-		char input;
+	while (true) {	
+		char input;	
 		src.get(input);
 		if (src.eof()) break;
 		//write by bit

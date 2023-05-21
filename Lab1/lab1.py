@@ -1,6 +1,8 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+import itertools
+
 import copy 
 ALPHA = 2
 MUY = 20
@@ -21,12 +23,14 @@ def generatorRandom(alpha = ALPHA, muy = MUY) -> int:
 #<=> well - ordered
 #build downward, like a lattice
 #recursion
-def generatorAcyclicDirectedGraph(vertices:int):
+def generatorAcyclicDirectedGraph(vertices:int, Layers = []):
     if (vertices == 2):
-        return [[0,1],[0,0]]
+        return [[0,0],[1,0]]
+    elif (vertices == 1):
+        return [[0]]
     else:
         '''randomly choose the new deg'''
-        num_des = generatorRandom()%((vertices-1)//2)+1
+        num_des = generatorRandom()%(vertices - 1 - (vertices-1)//2)+1
         available = []
         new = []
         '''create a new vector data for new vertex'''
@@ -34,10 +38,11 @@ def generatorAcyclicDirectedGraph(vertices:int):
             new.append(0)
         for i in range (vertices-1):
             available.append(i)
+        '''add layer'''
         '''randomly choose source vertices for the new'''
         while (num_des):
             index = available[generatorRandom()%(len(available))]
-            new[index] = (generatorRandom()+1)/10
+            new[index] = (generatorRandom()+1)
             available.remove(index)
             num_des= num_des - 1
         '''recursion'''
@@ -48,7 +53,41 @@ def generatorAcyclicDirectedGraph(vertices:int):
         adjmt.append(new)
         return adjmt
 
+def isSource(G, v):
+    for i in range (len(G)):
+        if (G[i][v]):
+            return False
+    return True
 
+def generatorAcyclicDirectedGraphWithFlow(vertices:int):
+    if (vertices == 2):
+        return [[0,1],[0,0]]
+    elif (vertices == 1):
+        return [[0]]
+    else:
+        G = generatorAcyclicDirectedGraph(vertices-1)
+        src = [0 for i in range(len(G)+1)]
+        '''the biggest src is the src which has flow to every other srcs '''
+        for i in range(len(G)):
+            G[i].append(0)
+            if (isSource(G, i)):
+                src[i] = (generatorRandom()+1)
+        G.append(src)
+        return G
+
+
+
+def generatorCapacities(G):
+    C = []
+    for i in range (len(G)):
+        tmp = []
+        for j in range (len(G)):
+            if (G[i][j]):
+                tmp.append((generatorRandom(2,7)*3+1))
+            else:
+                tmp.append(0)
+        C.append(tmp)
+    return C
 
 '''multiplication 2 adj matrices by Shimbell method'''
 '''simultaneously store the found path. This path can contain cycle. '''

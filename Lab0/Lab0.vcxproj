@@ -156,15 +156,9 @@
     <Text Include="INP.txt" />
     <Text Include="OUT.txt" />
     <Text Include="TMP.TXT" />
-    <Text Include="TMPD1.txt" />
-    <Text Include="TMPD2.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
-    <None Include="CHECK.dat" />
-    <None Include="INP.dat" />
-    <None Include="OUT.bin" />
-    <None Include="OUT.dat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
